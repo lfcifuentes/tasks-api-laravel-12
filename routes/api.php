@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\CommentController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -25,8 +26,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/tasks/{task}', [TaskController::class, 'update'])->where('task', '[0-9]+');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->where('task', '[0-9]+');
     // comment routes
-    // Route::post('/tasks/{task}/comments', [\App\Http\Controllers\CommentController::class, 'store']);
-    // Route::get('/tasks/{task}/comments', [\App\Http\Controllers\CommentController::class, 'index']);
+    Route::get('/tasks/{task}/comments', [CommentController::class, 'index'])->where('task', '[0-9]+');
+    Route::post('/tasks/{task}/comments', [CommentController::class, 'store'])->where('task', '[0-9]+');
     // time log routes
     // Route::post('/tasks/{task}/time-logs', [\App\Http\Controllers\TimeLogController::class, 'store']);
     // Route::get('/tasks/{task}/time-logs', [\App\Http\Controllers\TimeLogController::class, 'index']);
