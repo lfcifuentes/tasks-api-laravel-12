@@ -6,9 +6,44 @@ Simple API application for managing tasks.
 - [PHP 8.4.1](https://www.php.net)
 - [Laravel 12](https://laravel.com)
 - [MySQL 8.0](https://www.mysql.com)
+- [Mailpit](https://mailpit.axllent.org)
 - [Docker](https://www.docker.com)
     - [Docker Compose](https://docs.docker.com/compose)
 
+## Email Testing Setup
+
+### Environment Variables
+Add these mail configuration variables to your `.env` file:
+```properties
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### Start Mailpit Container
+```bash
+docker-compose up -d mailpit
+```
+
+### Access Mailpit Interface
+Visit [http://localhost:8025](http://localhost:8025) to view all captured emails.
+
+### Testing Email Functionality
+Send a test email using Tinker:
+```bash
+php artisan tinker
+Mail::raw('Test email', function($message) { $message->to('test@example.com')->subject('Test Subject'); });
+```
+
+### Stop Mailpit Container
+```bash
+docker-compose stop mailpit
+```
 
 ## Database Setup
 
@@ -24,7 +59,7 @@ DB_PASSWORD=user_password
 
 #### Start the Database Container
 ```bash
-docker-compose up -d
+docker-compose up -d mysql
 ```
 
 #### Stop the Database Container
@@ -63,3 +98,7 @@ Run database seeders
 php artisan db:seed
 ```
 
+Create storage link 
+```bash
+php artisan storage:link
+```

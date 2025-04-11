@@ -14,6 +14,21 @@ services:
         volumes:
             - mysql_data:/var/lib/mysql
         command: --default-authentication-plugin=mysql_native_password
+        networks:
+            - task-network
+
+    mailpit:
+        image: axllent/mailpit:latest
+        container_name: task-mailpit
+        ports:
+            - "1025:1025"
+            - "8025:8025"
+        networks:
+            - task-network
 
 volumes:
     mysql_data:
+
+networks:
+    task-network:
+        driver: bridge
