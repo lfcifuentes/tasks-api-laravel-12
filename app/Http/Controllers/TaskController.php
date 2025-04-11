@@ -44,7 +44,9 @@ class TaskController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tasks = Task::paginate();
+        $tasks = Task::orderBy('created_at', 'desc')
+                    ->paginate();
+
         return response()->json($tasks);
     }
 
