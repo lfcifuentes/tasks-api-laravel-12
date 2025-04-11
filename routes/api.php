@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\TaskTimeLogController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -29,8 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tasks/{task}/comments', [CommentController::class, 'index'])->where('task', '[0-9]+');
     Route::post('/tasks/{task}/comments', [CommentController::class, 'store'])->where('task', '[0-9]+');
     // time log routes
-    // Route::post('/tasks/{task}/time-logs', [\App\Http\Controllers\TimeLogController::class, 'store']);
-    // Route::get('/tasks/{task}/time-logs', [\App\Http\Controllers\TimeLogController::class, 'index']);
+    Route::get('/tasks/{task}/time-logs', [TaskTimeLogController::class, 'index'])->where('task', '[0-9]+');
+    Route::post('/tasks/{task}/time-logs', [TaskTimeLogController::class, 'store'])->where('task', '[0-9]+');
     // file upload routes
     // Route::post('/tasks/{task}/files', [\App\Http\Controllers\FileController::class, 'store']);
     // Route::get('/tasks/{task}/files', [\App\Http\Controllers\FileController::class, 'index']);

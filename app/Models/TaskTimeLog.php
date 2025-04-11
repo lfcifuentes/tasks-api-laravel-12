@@ -9,15 +9,11 @@ class TaskTimeLog extends Model
     protected $fillable = [
         'task_id',
         'user_id',
-        'start_time',
-        'end_time',
-        'duration',
+        'minutes',
     ];
 
     protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
-        'duration' => 'integer',
+        'minutes' => 'integer',
     ];
 
     public function task()

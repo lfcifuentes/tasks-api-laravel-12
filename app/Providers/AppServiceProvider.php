@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Gate;
 
 use App\Models\Task;
 use App\Policies\TaskPolicy;
+use App\Policies\TaskTimeLogPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,5 +31,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Task Policy
         Gate::policy(Task::class, TaskPolicy::class);
+        // Register TaskTimeLog Policy
+        Gate::define('create-task-time-log', [TaskTimeLogPolicy::class, 'create']);
     }
 }
