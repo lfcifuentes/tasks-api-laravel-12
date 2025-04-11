@@ -4,6 +4,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
+use App\Exceptions\Handler;
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -15,5 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Use the custom handler
+        $exceptions->renderable(function(Throwable $e, $request) {
+            if ($request->is('api/*') || $request->wantsJson()) {
+                return app(Handler::class)->render($request, $e);
+            }
+            throw $e;
+        });
     })->create();
