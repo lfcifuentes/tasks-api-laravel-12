@@ -7,6 +7,8 @@ use App\Enums\TaskStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\TaskStoreRequest;
+use App\Http\Requests\TaskUpdateRequest;
 
 /**
  * Class TaskController
@@ -74,7 +76,7 @@ class TaskController extends Controller
     /**
      * Store a newly created task
      *
-     * @param Request $request The HTTP request
+     * @param TaskStoreRequest $request The HTTP request
      * @return JsonResponse
      *
      * @bodyParam title string required The title of the task. Example: "Complete project documentation"
@@ -93,19 +95,13 @@ class TaskController extends Controller
      * }
      * @response 422 {"message": "The given data was invalid."}
      */
-    public function store(Request $request): JsonResponse
+    public function store(TaskStoreRequest $request): JsonResponse
     {
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'due_date' => ['required', 'date', 'after_or_equal:today'],
-            'assigned_to' => 'required|exists:users,id',
+        $task = Task::create([
+            ...$request->validated(),
+            'status' => TaskStatus::PENDING,
+            'created_by' => $request->user()->id
         ]);
-
-        $validatedData['status'] = TaskStatus::PENDING;
-        $validatedData['created_by'] = $request->user()->id;
-
-        $task = Task::create($validatedData);
 
         return response()->json($task, 201);
     }
@@ -113,7 +109,7 @@ class TaskController extends Controller
     /**
      * Update the specified task
      *
-     * @param Request $request The HTTP request
+     * @param TaskUpdateRequest $request The HTTP request
      * @param Task $task The task to update
      * @return JsonResponse
      * @throws AuthorizationException If user is not authorized to update the task
@@ -137,21 +133,19 @@ class TaskController extends Controller
      * @response 404 {"message": "Task not found."}
      * @response 422 {"message": "The given data was invalid."}
      */
-    public function update(Request $request, Task $task): JsonResponse
+    public function update(TaskUpdateRequest $request, Task $task): JsonResponse
     {
         Gate::authorize('update', $task);
 
-        $validatedData = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'sometimes|required|string',
-            'due_date' => ['sometimes', 'required', 'date', 'after_or_equal:today'],
-            'assigned_to' => 'sometimes|required|exists:users,id',
-            'status' => 'sometimes|required|in:' . implode(',', TaskStatus::getValues()),
-        ]);
+        $validatedData = $request->validated();
+
+        if ($request->has('status')) {
+            $validatedData['status'] = TaskStatus::from($request->input('status'));
+        }
 
         $task->update($validatedData);
-
-        return response()->json($task);
+        // Refresh the task instance to get the latest data
+        return response()->json($task->fresh());
     }
 
     /**
