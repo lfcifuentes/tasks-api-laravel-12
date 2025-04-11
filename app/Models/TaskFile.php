@@ -9,7 +9,7 @@ class TaskFile extends Model
     protected $fillable = [
         'task_id',
         'file_path',
-        'uploaded_by',
+        'user_id',
     ];
 
     protected $casts = [
@@ -24,6 +24,6 @@ class TaskFile extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'uploaded_by');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }
