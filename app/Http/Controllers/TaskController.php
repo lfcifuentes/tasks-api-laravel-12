@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Task;
 use App\Enums\TaskStatus;
 use Illuminate\Http\Request;
@@ -9,7 +10,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\TaskStoreRequest;
 use App\Http\Requests\TaskUpdateRequest;
-
+use App\Mail\NewTaskAssignedEmail;
+use Illuminate\Support\Facades\Mail;
 /**
  * Class TaskController
  *
@@ -104,6 +106,11 @@ class TaskController extends Controller
             'status' => TaskStatus::PENDING,
             'created_by' => $request->user()->id
         ]);
+        $task = $task->fresh()
+                    ->load('assignedTo', 'createdBy');
+
+        // Send email notification
+        $task->sendCreationNotification();
 
         return response()->json($task, 201);
     }
@@ -146,6 +153,9 @@ class TaskController extends Controller
         }
 
         $task->update($validatedData);
+
+        // send email notification
+        $task->sendUpdateNotification();
         // Refresh the task instance to get the latest data
         return response()->json($task->fresh());
     }
@@ -154,16 +164,18 @@ class TaskController extends Controller
      * Remove the specified task
      *
      * @param Task $task The task to delete
-     * @return JsonResponse
      * @throws AuthorizationException If user is not authorized to delete the task
      *
      * @response 204 ""
      * @response 403 {"message": "This action is unauthorized."}
      * @response 404 {"message": "Task not found."}
      */
-    public function destroy(Task $task): JsonResponse
+    public function destroy(Task $task)
     {
         Gate::authorize('delete', $task);
+        // Send email notification to the creator
+        $task->sendDeleteNotification();
+        // Delete the task
         $task->delete();
         return response()->noContent();
     }

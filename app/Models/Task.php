@@ -5,6 +5,9 @@ namespace App\Models;
 use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Notifications\TaskDeletedNotification;
+use App\Notifications\TaskUpdatedNotification;
+use App\Notifications\TaskAssignedNotification;
 
 class Task extends Model
 {
@@ -23,6 +26,7 @@ class Task extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'due_date' => 'datetime',
         'status' => TaskStatus::class,
     ];
 
@@ -49,5 +53,31 @@ class Task extends Model
     public function files()
     {
         return $this->hasMany(TaskFile::class);
+    }
+
+    /**
+     * Send notification when task is deleted
+     */
+    public function sendDeleteNotification(): void
+    {
+        $this->createdBy->notify(new TaskDeletedNotification($this));
+    }
+
+    /**
+     * Send notification when task is updated
+     */
+    public function sendUpdateNotification(): void
+    {
+        $this->assignedTo->notify(new TaskUpdatedNotification($this));
+        $this->createdBy->notify(new TaskUpdatedNotification($this));
+    }
+
+    /**
+     * Send notification when task is created
+     */
+    public function sendCreationNotification(): void
+    {
+        $this->assignedTo->notify(new TaskAssignedNotification($this));
+        $this->createdBy->notify(new TaskCreatedNotification($this));
     }
 }
