@@ -8,11 +8,14 @@ use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Auth\Access\AuthorizationException;
+use \Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+
 
 trait ApiExceptionHandler
 {
@@ -34,7 +37,7 @@ trait ApiExceptionHandler
         }
 
         if ($e instanceof ValidationException) {
-            return $this->errorResponse($e->validator->errors()->first(), 422);
+            return $this->errorResponse($e->validator->errors(), 422);
         }
 
         if ($e instanceof ModelNotFoundException) {
@@ -50,7 +53,10 @@ trait ApiExceptionHandler
             return $this->errorResponse('No autenticado', 401);
         }
 
-        if ($e instanceof AuthorizationException) {
+        if (
+            $e instanceof AuthorizationException
+            || $e instanceof AccessDeniedHttpException
+        ) {
             return $this->errorResponse('No posee permisos para esta acción', 403);
         }
 
@@ -61,7 +67,10 @@ trait ApiExceptionHandler
         if ($e instanceof QueryException && $e->errorInfo[1] === 1451) {
             return $this->errorResponse('Este recurso ya esta relacionado con otros', 409);
         }
+        if (app()->isProduction()) {
+            return $this->errorResponse('No eres tu somos nosotros, disculpa las molestias generadas estamos trabajando para arreglarlo');
+        }
 
-        return $this->errorResponse('Error interno del servidor', 500);
+        return $this->errorResponse($e->getMessage(), 500);
     }
 }

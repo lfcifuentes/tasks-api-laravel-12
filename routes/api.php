@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TaskController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -18,11 +19,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Task Routes
 Route::middleware('auth:sanctum')->group(function () {
-    // Route::get('/tasks', [\App\Http\Controllers\TaskController::class, 'index']);
-    // Route::post('/tasks', [\App\Http\Controllers\TaskController::class, 'store']);
-    // Route::get('/tasks/{task}', [\App\Http\Controllers\TaskController::class, 'show']);
-    // Route::put('/tasks/{task}', [\App\Http\Controllers\TaskController::class, 'update']);
-    // Route::delete('/tasks/{task}', [\App\Http\Controllers\TaskController::class, 'destroy']);
+    Route::get('/tasks', [TaskController::class, 'index']);
+    Route::post('/tasks', [TaskController::class, 'store']);
+    Route::get('/tasks/{task}', [TaskController::class, 'show'])->where('task', '[0-9]+');
+    Route::put('/tasks/{task}', [TaskController::class, 'update'])->where('task', '[0-9]+');
+    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->where('task', '[0-9]+');
     // comment routes
     // Route::post('/tasks/{task}/comments', [\App\Http\Controllers\CommentController::class, 'store']);
     // Route::get('/tasks/{task}/comments', [\App\Http\Controllers\CommentController::class, 'index']);

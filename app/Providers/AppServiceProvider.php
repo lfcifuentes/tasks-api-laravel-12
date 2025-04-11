@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Gate;
+
+use App\Models\Task;
+use App\Policies\TaskPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,5 +27,8 @@ class AppServiceProvider extends ServiceProvider
         if(app()->isProduction()) {
             URL::forceScheme('https');
         }
+
+        // Register Task Policy
+        Gate::policy(Task::class, TaskPolicy::class);
     }
 }

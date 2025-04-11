@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -11,11 +12,12 @@ class Task extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'title',
         'description',
         'status',
-        'assigned_to',
+        'due_date',
         'created_by',
+        'assigned_to',
     ];
 
     protected $casts = [

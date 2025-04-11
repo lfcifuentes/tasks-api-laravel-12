@@ -23,4 +23,9 @@ enum TaskStatus: string
             self::COMPLETED => 'green',
         };
     }
+
+    public static function getValues(): array
+    {
+        return array_map(fn($case) => $case->value, self::cases());
+    }
 }
