@@ -44,12 +44,27 @@ class TaskController extends Controller
      *   }
      * }
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $tasks = Task::orderBy('created_at', 'desc')
-                    ->paginate();
+        $query = Task::query();
 
-        return response()->json($tasks);
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('due_date')) {
+            $query->whereDate('due_date', $request->due_date);
+        }
+
+        if ($request->has('assigned_to')) {
+            $query->where('assigned_to', $request->assigned_to);
+        }
+
+        return response()->json(
+            $query
+                ->orderBy('created_at', 'desc')
+                ->paginate()
+        );
     }
 
     /**
