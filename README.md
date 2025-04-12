@@ -10,6 +10,15 @@ Simple API application for managing tasks.
 - [Docker](https://www.docker.com)
     - [Docker Compose](https://docs.docker.com/compose)
 
+
+## Setup Instructions
+1. Clone the repository
+2. Copy .env.example to .env
+3. Configure Mailpit settings
+4. Configure database settings
+5. Run migrations and seeders
+6. Start the development server
+
 ## Email Testing Setup
 
 ### Environment Variables
