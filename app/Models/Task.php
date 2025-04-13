@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Notifications\TaskCreatedNotification;
 use App\Notifications\TaskDeletedNotification;
 use App\Notifications\TaskUpdatedNotification;
 use App\Notifications\TaskAssignedNotification;
