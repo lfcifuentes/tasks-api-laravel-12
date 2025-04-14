@@ -8,6 +8,7 @@ use App\Models\TaskTimeLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Resources\TaskTimeLogResource;
 
 /**
  * Class TaskTimeLogController
@@ -24,7 +25,6 @@ class TaskTimeLogController extends Controller
      *
      * @param Request $request The HTTP request
      * @param Task $task The task to get time logs for
-     * @return JsonResponse
      *
      * @response 200 {
      *   "data": [
@@ -54,14 +54,14 @@ class TaskTimeLogController extends Controller
      * }
      * @response 403 {"message": "This action is unauthorized."}
      */
-    public function index(Request $request, Task $task): JsonResponse
+    public function index(Request $request, Task $task)
     {
         $timeLogs = TaskTimeLog::where('task_id', $task->id)
-            ->with(['user', 'task'])
+            ->with(['user'])
             ->orderBy('created_at', 'desc')
             ->paginate();
 
-        return response()->json($timeLogs);
+        return TaskTimeLogResource::collection($timeLogs);
     }
 
     /**
@@ -69,7 +69,6 @@ class TaskTimeLogController extends Controller
      *
      * @param Request $request The HTTP request
      * @param Task $task The task to log time for
-     * @return JsonResponse
      *
      * @throws AuthorizationException If user is not authorized
      *
@@ -97,7 +96,7 @@ class TaskTimeLogController extends Controller
      * @response 403 {"message": "This action is unauthorized."}
      * @response 422 {"message": "The given data was invalid."}
      */
-    public function store(Request $request, Task $task): JsonResponse
+    public function store(Request $request, Task $task)
     {
         Gate::authorize('create-task-time-log', $task);
         // Validate the request
@@ -117,6 +116,8 @@ class TaskTimeLogController extends Controller
         $task->total_time_spent += $timeLog->minutes;
         $task->save();
 
-        return response()->json($timeLog, 201);
+        return response()->json(
+            new TaskTimeLogResource($timeLog),
+            201);
     }
 }

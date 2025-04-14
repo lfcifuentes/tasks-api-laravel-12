@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use Illuminate\Http\JsonResponse;
+use App\Http\Resources\UserResource;
 
 /**
  * Class AuthController
@@ -78,12 +79,12 @@ class AuthController extends Controller
      * Get the authenticated user's information
      *
      * @param Request $request The request instance
-     * @return JsonResponse User information
+     * @return UserResource User information
      *
      * @response 200 {"id": 1, "name": "John Doe", "email": "john@example.com"}
      */
-    public function user(Request $request): JsonResponse
+    public function user(Request $request): UserResource
     {
-        return response()->json($request->user(), 200);
+        return new UserResource($request->user());
     }
 }

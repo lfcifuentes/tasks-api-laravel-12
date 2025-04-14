@@ -12,6 +12,7 @@ use App\Http\Requests\TaskStoreRequest;
 use App\Http\Requests\TaskUpdateRequest;
 use App\Mail\NewTaskAssignedEmail;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Resources\TaskResource;
 /**
  * Class TaskController
  *
@@ -24,7 +25,6 @@ class TaskController extends Controller
     /**
      * Display a paginated list of tasks
      *
-     * @return JsonResponse
      *
      * @response 200 {
      *   "data": [
@@ -44,7 +44,7 @@ class TaskController extends Controller
      *   }
      * }
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $query = Task::query();
 
@@ -60,8 +60,9 @@ class TaskController extends Controller
             $query->where('assigned_to', $request->assigned_to);
         }
 
-        return response()->json(
+        return TaskResource::collection(
             $query
+                ->with(['assignedTo', 'createdBy'])
                 ->orderBy('created_at', 'desc')
                 ->paginate()
         );
@@ -71,7 +72,6 @@ class TaskController extends Controller
      * Display the specified task
      *
      * @param Task $task The task to show
-     * @return JsonResponse
      * @throws AuthorizationException If user is not authorized to view the task
      *
      * @response 200 {
@@ -86,10 +86,10 @@ class TaskController extends Controller
      * @response 403 {"message": "This action is unauthorized."}
      * @response 404 {"message": "Task not found."}
      */
-    public function show(Task $task): JsonResponse
+    public function show(Task $task)
     {
         Gate::authorize('view', $task);
-        return response()->json($task);
+        return new TaskResource($task->load(['assignedTo', 'createdBy']));
     }
 
     /**
@@ -127,7 +127,12 @@ class TaskController extends Controller
         // Send email notification
         $task->sendCreationNotification();
 
-        return response()->json($task, 201);
+        return response()->json(
+            new TaskResource(
+                $task
+                    ->load(['assignedTo', 'createdBy'])
+            ),
+            201);
     }
 
     /**
@@ -135,7 +140,6 @@ class TaskController extends Controller
      *
      * @param TaskUpdateRequest $request The HTTP request
      * @param Task $task The task to update
-     * @return JsonResponse
      * @throws AuthorizationException If user is not authorized to update the task
      *
      * @bodyParam title string The title of the task. Example: "Updated task title"
@@ -157,7 +161,7 @@ class TaskController extends Controller
      * @response 404 {"message": "Task not found."}
      * @response 422 {"message": "The given data was invalid."}
      */
-    public function update(TaskUpdateRequest $request, Task $task): JsonResponse
+    public function update(TaskUpdateRequest $request, Task $task)
     {
         Gate::authorize('update', $task);
 
@@ -172,7 +176,14 @@ class TaskController extends Controller
         // send email notification
         $task->sendUpdateNotification();
         // Refresh the task instance to get the latest data
-        return response()->json($task->fresh());
+        return response()->json(
+            new TaskResource(
+                $task
+                    ->fresh()
+                    ->load(['assignedTo', 'createdBy'])
+            ),
+            200
+        );
     }
 
     /**
@@ -192,6 +203,7 @@ class TaskController extends Controller
         $task->sendDeleteNotification();
         // Delete the task
         $task->delete();
+
         return response()->noContent();
     }
 }

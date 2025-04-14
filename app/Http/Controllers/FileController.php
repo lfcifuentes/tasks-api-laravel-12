@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\TaskFileResource;
 
 class FileController extends Controller
 {
@@ -59,10 +60,15 @@ class FileController extends Controller
                 'mime_type' => $file->getMimeType(),
             ]);
 
-            return response()->json([
-                'message' => 'File uploaded successfully',
-                'data' => $taskFile->load('user')
-            ], 201);
+            return response()->json(
+                new TaskFileResource(
+                    $taskFile
+                        ->load([
+                            'user',
+                        ])
+                ),
+                201
+            );
 
         } catch (\Exception $e) {
             // Clean up any uploaded file if record creation fails
@@ -79,13 +85,13 @@ class FileController extends Controller
 
     public function index(Task $task)
     {
-        $filesTwo = $task->files()
+        $files = $task->files()
             ->orderBy('created_at', 'desc')
             ->with([
                 'user',
                 'task'
             ])
-            ->paginate(2);
-        return response()->json($filesTwo, 200);
+            ->paginate();
+        return TaskFileResource::collection($files);
     }
 }

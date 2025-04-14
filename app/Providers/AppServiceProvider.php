@@ -10,6 +10,7 @@ use App\Models\Task;
 use App\Policies\TaskPolicy;
 use App\Policies\TaskFilePolicy;
 use App\Policies\TaskTimeLogPolicy;
+//use App\Policies\TaskCommentPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,5 +37,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('create-task-time-log', [TaskTimeLogPolicy::class, 'create']);
         // Register TaskFile Policy
         Gate::define('create-task-file', [TaskFilePolicy::class, 'create']);
+        // Register TaskComment Policy
+        //Gate::define('create-task-comment', [TaskCommentPolicy::class, 'create']);
     }
 }

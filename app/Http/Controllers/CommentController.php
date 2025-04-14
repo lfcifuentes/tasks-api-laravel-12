@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use App\Http\Resources\CommentResource;
 
 class CommentController extends Controller
 {
@@ -12,28 +14,32 @@ class CommentController extends Controller
     public function index(Request $request, Task $task)
     {
         // Fetch comments for the task
-        $comments = Comment::where('task_id', $task->id)
+        $comments = $task->comments()
             ->orderBy('created_at', 'desc')
+            ->with([
+                'user',
+            ])
             ->paginate();
 
-        return response()->json($comments);
+        return CommentResource::collection($comments);
     }
 
     // store a new comment for a task
     public function store(Request $request, Task $task)
     {
-        // Validate the request
-        $request->validate([
+        $validated = $request->validate([
             'comment' => 'required|string|max:255',
         ]);
 
-        // Create a new comment
-        $comment = new Comment();
-        $comment->task_id = $task->id;
-        $comment->user_id = auth()->id();
-        $comment->comment = $request->input('comment');
-        $comment->save();
+        $comment = new Comment([
+            'user_id' => auth()->id(),
+            'comment' => $validated['comment']
+        ]);
 
-        return response()->json($comment, 201);
+        $task->comments()->save($comment);
+
+        return new CommentResource(
+            $comment->load('user')
+        );
     }
 }
