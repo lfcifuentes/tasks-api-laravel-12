@@ -16,7 +16,8 @@ class TaskFileResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'file_path' => $this->file_path,
+            //'file_path' => $this->file_path,
+            'file_url' => $this->when($this->file_url, $this->file_url),
             'user_id' => $this->user_id,
             'task_id' => $this->task_id,
             'user' => new UserResource($this->whenLoaded('user')),
